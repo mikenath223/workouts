@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { getWorkoutIds, getWorkouts } from "./utils/request";
-import { IWrkIds, IWrk } from "./types";
-
-interface IShow {
-  [key: string]: boolean | string;
-}
+import Workout from "./components/Workout";
+import { IWrkIds, IWrk, IShow } from "./types";
 
 const App = () => {
   const [workouts, setWorkouts] = useState<IWrk[]>([]);
@@ -13,11 +10,10 @@ const App = () => {
   const runPromises = useCallback(
     async (idArr: string[], next: number = 0, res: IWrk[]) => {
       let queryStr = idArr.slice(next, next + 10).join(",");
+      setWorkouts(res);
       const retWorkouts: IWrk[] = await getWorkouts(queryStr);
-      if (next < 101) {
-        console.log({ next, queryStr, res });
+      if (next < 100) {
         runPromises(idArr, next + 10, [...res, ...retWorkouts]);
-        setWorkouts(res);
       }
     },
     []
@@ -26,7 +22,7 @@ const App = () => {
   const fetchWorkouts = useCallback(async () => {
     try {
       const workout = await getWorkoutIds();
-      const workouts = workout.slice(99);
+      const workouts = workout.slice(0, 101);
       const workoutIds = workouts.map((item: IWrkIds) => item.Id);
       runPromises(workoutIds, 0, []);
     } catch (error) {}
@@ -36,7 +32,7 @@ const App = () => {
     fetchWorkouts();
   }, [fetchWorkouts]);
 
-  const handleShowMore = (id: number) => {
+  const handleShowMore = (id: number): void => {
     if (showMore[String(id)]) {
       return setShowMore({ ...showMore, [id]: false });
     }
@@ -58,20 +54,12 @@ const App = () => {
         </thead>
         <tbody>
           {workouts.map((wrk: IWrk) => (
-            <tr key={wrk.Id} onClick={() => handleShowMore(wrk.Id)}>
-              <td>{wrk.Name}</td>
-              <td>{wrk.Tss}</td>
-              <td>{wrk.AverageFtpPercent}</td>
-              {wrk.Zones.map((zn) => (
-                <td>{zn}</td>
-              ))}
-              {showMore[wrk.Id] && (
-                <>
-                  <td>{wrk.Description}</td>
-                  <td>{wrk.Duration}</td>
-                </>
-              )}
-            </tr>
+            <Workout
+              key={wrk.Id}
+              wrk={wrk}
+              showMore={showMore}
+              handleShowMore={handleShowMore}
+            />
           ))}
         </tbody>
       </table>

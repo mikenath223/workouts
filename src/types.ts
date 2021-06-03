@@ -1,6 +1,6 @@
 export interface IWrkIds {
   Id: string;
-  updated: string
+  updated: string;
 }
 
 export interface IWrk {
@@ -11,4 +11,13 @@ export interface IWrk {
   Zones: string[];
   Description: string;
   Duration: string;
+}
+
+export interface IShow {
+  [key: string]: boolean | string;
+}
+
+export interface INext {
+  next: number;
+  query: string;
 }
